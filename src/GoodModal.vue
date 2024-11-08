@@ -8,7 +8,8 @@
         <h4>{{원룸들[누른거].title}}</h4>
         <img :src="원룸들[누른거].image" alt="">
         <p>{{원룸들[누른거].content}}</p>
-        <h3>{{원룸들[누른거].price}}</h3>
+        <input type="text" v-model.trim="month">개월
+        <h3>{{원룸들[누른거].price * month}}</h3>
         <p>{{ 인적.age }}</p>
         <p>{{ 작명[0] }}</p>
       </div>
@@ -24,6 +25,25 @@
   <script>
   export default {
     name:'GoodModal',
+    data(){
+      return{
+        month:0,
+        }
+    },
+      watch:{
+        month(a){
+          if(a >= 13 || isNaN(a) == true){
+            alert("숫자만 입력해주세요");
+            this.month = 1;
+          }
+        }
+      },
+      beforeUpdate(){
+        if(this.month == 2){
+          alert("꺼져")
+          this.month = 3
+        }
+      },
     props:{
         원룸들 : Array,
         누른거 : Number,
@@ -53,7 +73,11 @@
   position: relative;
   /* overflow: hidden; */
 
+
 }
+
+
+
 
 .d-none{
   display: none;

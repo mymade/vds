@@ -10,14 +10,26 @@
     다시 만나요
   </div>
   
-  <Modal @closeModal="모달창 = false;" :원룸들="원룸들" :누른거="누른거" :모달창="모달창" :인적="인적" :작명="[11,2,3]"/>
+  <transition name="작명">
+    <!-- <div class="start" :class="{end : 모달창}"> -->
+      <Modal @closeModal="모달창 = false;" :원룸들="원룸들" :누른거="누른거" :모달창="모달창" :인적="인적" :작명="[11,2,3]"/>
+  <!-- </div> -->
+  </transition>
+  
 
+  
   <nav>
     <ul>
       <li><a href="#" v-for="(작명,i) in 메뉴들" :key="i" >{{ 작명 }}</a></li>
     </ul>
   </nav>
-  <Cards  :원룸들="원룸들[i]"  :신고수="신고수[i]" v-for="(작명, i) in 원룸들" :key="작명" @increased="increase(i)" @openModal="모달창 = true; 누른거= $event"></Cards>
+  <Discount v-if="showDiscount == true"/>
+  <div class="sort-box">
+    <button class="sort-btn" @click="priceSort()" >가격 낮은 순</button>
+    <button class="sort-btn" @click="priceSort2()">가격 높은 순</button>
+    <button class="sort-btn" @click="sortBack()">원래대로 보기</button>
+  </div>
+  <Cards  :원룸들="원룸들[i]"  :신고수="신고수[i]" v-for="(작명, i) in 원룸들" :key="작명" @increased="increase(i)" @monthPrice="pricing(i, month)" @openModal="모달창 = true; 누른거= $event"></Cards>
   <!-- <ul>
     <li :id="i" v-for="(작명,i) in products" :key="i">{{작명}}</li>
   </ul> -->
@@ -30,11 +42,15 @@
 import data from './db/oneroom.js';
 import Modal from './GoodModal.vue';
 import Cards from './CardTemplate.vue'
+import Discount from './DisCount.vue';
+
+
 
 export default {
   name:'App',
   data(){
     return{
+      showDiscount:true,
       누른거:0,
       모달창:false,
       메뉴들 : ['Home', 'Shop', 'About'],
@@ -44,17 +60,55 @@ export default {
       스타일 : 'color:blue',
       신고수 : [0,0,0,0,0,0],
       // 배열로 각 상품의 신고 수를 관리하려면 그만큼 숫자를 입력해둬야 하는데 다른 방법이 없을까... 늘어나면 번거로울듯
-      원룸들 : data,
-      인적 : {name:'anna', age:10}
+      원룸들 : [...data],
+      인적 : {name:'anna', age:10},
+      원룸들오리지널:[...data]
     }
+  },
+  mounted(){
+    // setTimeout(()=>{this.showDiscount = false},10000)
   },
   components:{
     Modal,
-    Cards
+    Cards,
+    Discount
   },
   methods:{
+    activeBack(){
+      document.getElementsByClassName("sort-btn")[0].classList.remove("active")
+      document.getElementsByClassName("sort-btn")[1].classList.remove("active")
+      document.getElementsByClassName("sort-btn")[2].classList.add("active")
+    },
+    activeFirst(){
+      document.getElementsByClassName("sort-btn")[0].classList.add("active")
+      document.getElementsByClassName("sort-btn")[1].classList.remove("active")
+      document.getElementsByClassName("sort-btn")[2].classList.remove("active")
+    },
+    activeSecond(){
+      document.getElementsByClassName("sort-btn")[0].classList.remove("active")
+      document.getElementsByClassName("sort-btn")[1].classList.add("active")
+      document.getElementsByClassName("sort-btn")[2].classList.remove("active")
+    },
+    priceSort(){
+      this.원룸들.sort((a,b)=> a.price - b.price);
+      this.activeFirst();
+    },
+    priceSort2(){
+      this.원룸들.sort(function(a,b){
+        return b.price - a.price;
+      })
+      this.activeSecond();
+    },
+    sortBack(){
+      this.원룸들 = [...this.원룸들오리지널]
+      this.activeBack();
+    },
+
     increase(i){
       this.신고수[i] += 1;
+    },
+    pricing(i, month){
+      this.원룸들[i].price * month
     },
     clicked(){
       document.querySelector(".black-bg").classList.add("d-block")
@@ -126,6 +180,21 @@ nav > ul > li > a {
 
 }
 
+.작명-enter-from { opacity: 0;  }
+.작명-enter-active { transition: all 1s; }
+.작명-enter-to { opacity: 1; }
+
+
+/* .start{
+  opacity: 0;
+  transition:all 1s;
+}
+.end{
+  opacity: 1;
+} */
+
+/* modal 컴포넌트에 줄 각각의 애니메이션 */
+
 .d-none{
   display: none;
 }
@@ -173,5 +242,28 @@ nav > ul > li > a {
   object-fit: contain;
 }
 
+.sort-btn{
+  margin-top: 30px;
+  padding: 12px 15px;
+  border: none;
+  transition: 0.3s;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+.sort-btn:hover{
+  background-color: rgb(40, 40, 40);
+  color: white;
+}
+
+.sort-btn.active{
+  background-color: rgb(40, 40, 40);
+  color: white;
+}
+
+.sort-box .sort-btn:nth-child(3){
+  margin-right: 0 !important
+}
 
 </style>
